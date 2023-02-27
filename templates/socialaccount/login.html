@@ -1,0 +1,13 @@
+{% extends "socialaccount/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+
+
+<form method="post">
+  {% csrf_token %}
+  <button class="btn btn-primary btn-xl" type="submit">{% trans "Continue" %}</button>
+</form>
+{% endblock %}

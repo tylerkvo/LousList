@@ -1,0 +1,115 @@
+{% load socialaccount %}
+{% load static %}
+{% load tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Lou's List</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="{% static 'googleauth/assets/favicon.ico'%}" />
+    <!-- Bootstrap Icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic" rel="stylesheet" type="text/css" />
+    <!-- SimpleLightbox plugin CSS-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="{% static 'googleauth/styles.css'%}" rel="stylesheet" />
+</head>
+<body id="page-top" style="background: linear-gradient(to bottom, rgba(92, 77, 66, 0.8) 0%, rgba(92, 77, 66, 0.8) 100%)">
+    {% include 'googleauth/messages.html' %}
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../">Lou's List</a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../search">Class Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../searchpeople">People Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../schedule">Schedules</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../profile/{{ id }}">My Profile</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Masthead-->
+    <header class="masthead">
+        <div class="container py-5">
+            <div class="row">
+                <h1 class="text-white font-weight-bold align-items-center justify-content-center text-center">Search Results: {{ latest_dept }}</h1>
+                <hr class="divider" />
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    </div>
+                        <div class="card mb-4 mb-md-0">
+                            <div class="card-body" style="text-align: center">
+                                <div class="accordion mb-5" id="class-accordion">
+                                    {% for key, value in classList.items %} 
+                                    <div class="accordion-item">
+                                        <h3 class="accordion-header" id="headingTwo"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{value|index:0|get_item:'subject'}}{{value|index:0|get_item:'catalog_number'}}{{value|index:0|get_item:'course_number'}}" aria-expanded="false" aria-controls="{{value|index:0|get_item:'subject'}}{{value|index:0|get_item:'catalog_number'}}{{value|index:0|get_item:'course_number'}}">{{value|index:0|get_item:'subject'}} {{value|index:0|get_item:'catalog_number'}} - {{value|index:0|get_item:'description'}}</button></h3>
+                                        <div class="accordion-collapse collapse" id="{{value|index:0|get_item:'subject'}}{{value|index:0|get_item:'catalog_number'}}{{value|index:0|get_item:'course_number'}}" aria-labelledby="headingTwo" data-bs-parent="#class-accordion">
+                                            <div class="accordion-body">
+                                                <a class= "btn btn-outline-secondary" href="https://thecourseforum.com/course/{{value|index:0|get_item:'subject'}}/{{value|index:0|get_item:'catalog_number'}}/">CourseForum</a>
+                                                <a> &nbsp </a>
+                                                <a class= "btn btn-outline-secondary" href="https://vagrades.com/uva/{{value|index:0|get_item:'subject'}}{{value|index:0|get_item:'catalog_number'}}/">VAGrades</a><br>
+                                                <br>
+                                                <!--Each individual Section-->
+                                                {% for vals in value %}
+                                                    <h4>Section {{vals|get_item:'course_section'}}</h4>
+                                                    {% if vals|get_item:'instructor'|get_item:'name' != "-" %}
+                                                    Instructor: <a href="mailto:{{ vals|get_item:'instructor'|get_item:'email' }}">{{ vals|get_item:'instructor'|get_item:'name' }}</a>
+                                                    {% else %}
+                                                    Instructor: TBA 
+                                                    {% endif%}<br>
+                                                    Type: {{vals|get_item:'component'}}, Units: {{vals|get_item:'units'}}<br>
+                                                    Enrollment: {{vals|get_item:'enrollment_total'}} / {{vals|get_item:'class_capacity'}}<br>
+                                                    WaitList: {{vals|get_item:'wait_list'}} / {{vals|get_item:'wait_cap'}}<br>
+                                                    {% if vals|get_item:'meetings'|index:0|get_item:'days' != "-" %}
+                                                    Meets: {{vals|get_item:'meetings'|index:0|get_item:'days'}} from {{ vals|get_item:'meetings'|index:0|get_item:'start_time'|convert_time}} - {{ vals|get_item:'meetings'|index:0|get_item:'end_time'|convert_time}} at {{ vals|get_item:'meetings'|index:0|get_item:'facility_description'}}
+                                                    {% else %}
+                                                    Meets: TBA 
+                                                    {% endif%}
+                                                    
+                                                    <form method="POST" action="interested/{{vals|get_item:'subject'}}-{{vals|get_item:'catalog_number'}}-{{vals|get_item:'course_number'}}">
+                                                        {% csrf_token %}
+                                                        <input type="submit" value="Add to Interested List" style="border-color:#f4623a; color:#f4623a; background-color:white;"/>
+                                                    </form>
+                                                    <br>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %} 
+                                </div>
+                                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SimpleLightbox plugin JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="../../js/scripts.js"></script>
+    <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+    <!-- * *                               SB Forms JS                               * *-->
+    <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+    <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+</body>
+</html>

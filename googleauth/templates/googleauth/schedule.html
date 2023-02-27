@@ -1,0 +1,279 @@
+{% load socialaccount %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Lou's List</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="{% static 'googleauth/assets/favicon.ico'%}" />
+    <!-- Bootstrap Icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic" rel="stylesheet" type="text/css" />
+    <!-- SimpleLightbox plugin CSS-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="{% static 'googleauth/styles.css'%}" rel="stylesheet" />
+</head>
+<body id="page-top" style="background: linear-gradient(to bottom, rgba(92, 77, 66, 0.8) 0%, rgba(92, 77, 66, 0.8) 100%)">
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../">Lou's List</a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../search">Class Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../searchpeople">People Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../schedule">Schedules</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../profile/{{ id }}">My Profile</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Masthead-->
+    <header class="masthead">
+        <div class="container py-5">
+            {% if is_cur_user or is_following %}
+            <div class="row">
+                <h2 class="text-white font-weight-bold align-items-center justify-content-center text-center">{{cur_sched.name}}</h2>
+                <hr class="divider" />
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-body text-center" style="overflow-y:scroll">
+                            <div class="table-responsive">
+                                <table class="table table-bordered text-center">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <!-- Interested classes column-->
+                                                <p class="mb-4"><span class="text-primary font-italic me-1">Interested Classes</p>
+                                                {% for cl, class in interestedList %}
+
+                                                    <hr class="divider-long" />
+                                                    {% if is_cur_user %}
+                                                        <div class="container " style="border-radius:10px;">
+                                                            <p class="text-black" style="float: left">{{class}} </p>
+                                                            <form action="{% url 'deleteclass' cl.id %}" method="post" style="float:right">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" value="{{cur_sched.id}}" name="cur_sched_id">
+                                                                <input type="submit" value="X" style="background-color:#fff; border-color: transparent;" >
+                                                            </form>
+                                                            <br>
+                                                            {% if cl in c %}
+                                                                <form action="{% url 'removeclass' cur_sched.id cl.id %}" method="post">
+                                                                    {% csrf_token %}
+                                                                    <input type="submit" value="Remove" style="border-color:white; color:white; background-color:#f4623a; width: 100%;" > 
+                                                                </form>
+                                                            {% else %}
+                                                                <form action="{% url 'addclass' cur_sched.id cl.id %}" method="post">
+                                                                {% csrf_token %}
+                                                                <input type="submit" value="Add" style="border-color:#f4623a; color:#f4623a; background-color:white; width: 100%;">
+                                                                </form>
+                                                            {% endif %}
+                                                        </div>
+                                                        <!-- If not following-->
+                                                    {% elif is_following %}
+                                                    <div class="container"style="border-radius:10px">
+                                                        <p class="text-black" style="text-align: left;">{{class}} </p>
+                                                    </div>
+                                                    {% endif %}
+                                                    
+                                                {% endfor %}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Schedule Display-->
+                <!-- Bootdey https://www.bootdey.com/snippets/view/time-table-->
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered text-center" >
+                                        <thead >
+                                            <tr class="bg-light-gray">
+                                                <th class="text-uppercase">Monday</th>
+                                                <th class="text-uppercase">Tuesday</th>
+                                                <th class="text-uppercase">Wednesday</th>
+                                                <th class="text-uppercase">Thursday</th>
+                                                <th class="text-uppercase">Friday</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr >
+                                                <!-- Monday-->
+                                                <td>
+                                                    {% for key, val in monday_list.items%}
+                                                        <div class="container bg-secondary" style="border-radius:10px">
+                                                            <span class="text-white">
+                                                                
+                                                                {{key}} 
+                                                                {% if key in monday_conflicts %}
+                                                                <sup  style="color:Red; font-size: 10px; text-align: right;">*</sup>
+                                                                {% endif %}
+                                                                {{val}} <br>
+                                                            </span>
+                                                        </div>
+                                                        <br>
+                                                    {% endfor %}
+                                                </td>
+                                                <td>
+                                                <!-- Tuesday-->
+                                                    {% for key, val in tuesday_list.items%}
+                                                        <div class="container bg-secondary" style="border-radius:10px">
+                                                            <span class="text-white">
+                                                                {{key}} 
+                                                                {% if key in tuesday_conflicts %}
+                                                                <sup  style="color:Red; font-size: 10px; text-align: right;">*</sup>
+                                                                {% endif %}
+                                                                {{val}} <br>
+                                                            </span>
+                                                        </div>
+                                                        <br>
+                                                    {% endfor %}
+                                                <td>
+                                                <!-- Wednesday-->
+                                                    {% for key, val in wednesday_list.items%}
+                                                        <div class="container bg-secondary" style="border-radius:10px">
+                                                            <span class="text-white">
+                                                                {{key}} 
+                                                                {% if key in wednesday_conflicts %}
+                                                                <sup  style="color:Red; font-size: 10px; text-align: right;">*</sup>
+                                                                {% endif %}
+                                                                {{val}} <br>
+                                                            </span>
+                                                        </div>
+                                                        <br>
+                                                    {% endfor %}
+                                                <td>
+                                                <!-- Thursday-->
+                                                    {% for key, val in thursday_list.items%}
+                                                        <div class="container bg-secondary" style="border-radius:10px">
+                                                            <span class="text-white">
+                                                                {{key}} 
+                                                                {% if key in thursday_conflicts %}
+                                                                <sup  style="color:Red; font-size: 10px; text-align: right;">*</sup>
+                                                                {% endif %}
+                                                                {{val}} <br>
+                                                            </span>
+                                                        </div>
+                                                        <br>
+                                                    {% endfor %}
+                                                <td>
+                                                <!-- Friday-->
+                                                    {% for key, val in friday_list.items%}
+                                                        <div class="container bg-secondary" style="border-radius:10px">
+                                                            <span class="text-white">
+                                                                {{key}} 
+                                                                {% if key in friday_conflicts %}
+                                                                <sup  style="color:Red; font-size: 10px; text-align: right;">*</sup>
+                                                                {% endif %}
+                                                                {{val}} <br>
+                                                            </span>
+                                                        </div>
+                                                        <br>
+                                                    {% endfor %}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <p class="text-black" style="font-size: 12px"> <sup style="color:Red;">*</sup> = Conflicting Classes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <!-- Comment Feature-->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        {% if is_cur_user or is_following %}
+                                                            <p class="mb-4"><span class="text-primary font-italic me-1">Comments</p>
+                                                            <!-- Comment List -->
+                                                            {% for comment in comments %}
+                                                                <div class="container" style="border-radius:10px">
+                                                                    
+                                                                    {% if is_cur_user %}
+                                                                        <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" alt="avatar"
+                                                                        class="rounded-circle img-fluid" style="width: 30px; float:left">
+                                                                    {% else %}
+                                                                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp" alt="avatar"
+                                                                        class="rounded-circle img-fluid" style="width: 30px; float:left">
+                                                                    {% endif %}
+                                                                  
+                                                                    <p class="text-black font-weight-bold" style="display: inline-block;" > &nbsp {{comment.commentor_name}}</p>
+                                                                   
+                                                                    {% if is_cur_user %}
+                                                                        <form method="POST" action="../delete_comment/" id="deleteform" style="float:right">
+                                                                            {% csrf_token %}
+                                                                            <input type="hidden" name="comment_id" value="{{comment.id}}">
+                                                                            <input type="hidden" name="sched_id" value="{{cur_sched.id}}">
+                                                                            <input type="submit" value="X" style="background-color:#fff; border-color: transparent;">
+                                                                        </form><br>
+                                                                    {% endif %}
+                                                                    <p class="text-black">{{comment.comment}}</p>
+                                                                    
+                                                                </div> 
+                                                                <br>
+                                                            {% endfor %}
+                                                            <!-- Comment Form-->
+                                                            <form method="POST" action="../add_comment/" id="commentform">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="owner_id" value="{{cur_sched.user.id}}">
+                                                                <input type="hidden" name="commentor_id" value="{{id}}">
+                                                                <input type="hidden" name="sched_id" value="{{cur_sched.id}}">
+                                                                <textarea rows="2" style="width: 100%" name="comment" placeholder="Enter comment here..."></textarea><br>
+                                                                <input class=""type="submit" value="Post" style="width: 100%;color: white; border-color: transparent; background-color:#f4623a ">
+                                                            </form>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %} 
+            <!-- If not following-->
+            <div class="row">
+                <h2 class="text-white font-weight-bold align-items-center justify-content-center text-center">You must be following this user to see their schedule!</h2>
+                <hr class="divider" />
+            </div>
+            {% endif %}
+        </div>
+
+    </header>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SimpleLightbox plugin JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="../../js/scripts.js"></script>
+    <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+    <!-- * *                               SB Forms JS                               * *-->
+    <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+    <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+</body>
+
+</html>

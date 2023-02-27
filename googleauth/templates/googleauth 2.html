@@ -1,0 +1,24 @@
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> Lou's List Sign In </title>
+</head>
+<body>
+    <h1> Lou's List Sign In </h1>
+    {% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }} !</p><br>
+    <p><a href="{% provider_login_url 'google' %}">Log Out</a></p>
+    
+    {% else %}
+    <a href="{% provider_login_url 'google' %}">Login with Google</a>
+    {% endif %}
+</body>
+</html>
+
+<!-- 
+Author: Muhd Rahiman
+Link: https://dev.to/mdrhmn/django-google-authentication-using-django-allauth-18f8 
+Title: Django Google Authentication using django-allauth
+ -->

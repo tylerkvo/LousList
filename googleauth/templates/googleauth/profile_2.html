@@ -1,0 +1,140 @@
+{% load socialaccount %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Lou's List</title>
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="{% static 'googleauth/assets/favicon.ico'%}" />
+    <!-- Bootstrap Icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,700" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic" rel="stylesheet" type="text/css" />
+    <!-- SimpleLightbox plugin CSS-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="{% static 'googleauth/styles.css'%}" rel="stylesheet" />
+</head>
+<body id="page-top" style="background: linear-gradient(to bottom, rgba(92, 77, 66, 0.8) 0%, rgba(92, 77, 66, 0.8) 100%)">
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+        <div class="container px-4 px-lg-5">
+            <a class="navbar-brand" href="../">Lou's List</a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="../about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../search">Class Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../searchpeople">People Search</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../schedule">Schedules</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../profile/{{user.socialuser.id}}">My Profile</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Masthead-->
+    <header class="masthead">
+        <div class="container py-5">
+            <div class="row">
+                {% if user.socialuser.id == id %}
+                <h1 class="text-white font-weight-bold align-items-center justify-content-center text-center">My Profile</h1>
+                {% else %}
+                <h1 class="text-white font-weight-bold align-items-center justify-content-center text-center">Profile</h1>
+                {% endif %}
+                <hr class="divider" />
+              </div>
+              <!-- Profile Card-->
+            <div class="row">
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                <div class="card-body text-center">
+                
+                    {% if user.socialuser.id == id %}
+                        <img src="{{ user.socialaccount_set.all.0.get_avatar_url }}" alt="avatar"
+                        class="rounded-circle img-fluid" style="width: 150px;">
+                        <h5 class="my-3">{{ username }}</h5>
+                        <p class="text-muted mb-1">{{ bio }}</p>
+                        <div class="d-flex justify-content-center mb-2">
+                        <a type="button" class="btn btn-primary" href="{% url 'profile' %}">Edit</a>
+                        
+                    {% else %}
+                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3.webp" alt="avatar"
+                        class="rounded-circle img-fluid" style="width: 150px;">
+                        <h5 class="my-3">{{ username }}</h5>
+                        <p class="text-muted mb-1">{{ bio }}</p>
+                        <div class="d-flex justify-content-center mb-2">
+                        {% if exists %}
+                            {% if id in id_list %}
+                                <a type="button" href="../remove_friend/{{id}}" class="btn btn-primary">Unfollow</a>
+                            {% else %}
+                                <a type="button" href="../add_friend/{{id}}" class="btn btn-primary">Follow</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    </div>
+                </div>
+                </div>
+                <!-- Schedule Card-->
+                <div class="card mb-4 mb-lg-0">
+                    <div class="card-body">
+                        {% if exists %}
+                        <p class="mb-4"><span class="text-primary font-italic me-1">Schedules
+                        </p>
+                        {% for schedule in schedules %}
+                            <a href="../schedule/{{schedule.id}}" class="btn  btn-outline-secondary" style="width: 100%;">{{schedule.name}}</a><br>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                  </div>
+                
+            </div>
+            <!-- Following Card-->
+            <div class="col-lg-8">
+                <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4 mb-md-0">
+                    <div class="card-body">
+                        
+                        <p class="mb-4"><span class="text-primary font-italic me-1">Following
+                        </p>
+                        {% for friend in friends %}
+                            <a type="button" href="../profile/{{friend.socialuser.id}}" class="btn  btn-outline-secondary" style="width: 100%;">{{friend.username}}</a><br>
+                        {% endfor %}
+                        
+                    </div>
+                    </div>
+                </div>
+                <!-- Followers card-->
+                <div class="col-md-6">
+                    <div class="card mb-4 mb-md-0">
+                    <div class="card-body">
+                        <p class="mb-4"><span class="text-primary font-italic me-1">Followers
+                        </p>
+                        {% for follower in friended_by %}
+                            <a type="button" href="../profile/{{follower.id}}" class="btn  btn-outline-secondary" style="width: 100%;">{{follower.user.username}}</a><br>
+                        {% endfor %}
+                    <!-- Django Update User Profile -->
+                    <!-- https://dev.to/earthcomfy/django-update-user-profile-33ho -->
+                </div>
+            </div>
+            </div>
+        </div>
+    </header>
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SimpleLightbox plugin JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="../../js/scripts.js"></script>
+    <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+    <!-- * *                               SB Forms JS                               * *-->
+    <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+    <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+    <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+</body>
+</html>
